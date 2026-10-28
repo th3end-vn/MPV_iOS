@@ -15,7 +15,7 @@ final class MPVMetalViewController: UIViewController {
     var hdrAvailable : Bool = false
     var hdrEnabled = false {
         didSet {
-            // FIXME: target-colorspace-hint does not support being changed at runtime.
+            // FIXME: target-colorspace-hint does not support being changed at runtime.
             // this option should be set as early as possible otherwise can cause issues
             // not recommended to use this way.
             if hdrEnabled {
@@ -29,9 +29,8 @@ final class MPVMetalViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        metalLayer.frame = view.frame
-        print(view.bounds)
-        print(view.frame)
+        // FIX: dùng bounds (toạ độ nội bộ của view) thay vì frame (toạ độ trong superview)
+        metalLayer.frame = view.bounds
         metalLayer.contentsScale = UIScreen.main.nativeScale
         metalLayer.framebufferOnly = true
         metalLayer.backgroundColor = UIColor.black.cgColor
@@ -48,7 +47,43 @@ final class MPVMetalViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        metalLayer.frame = view.frame
+        // FIX xoay màn hình: cân lại layer theo bounds mới, tắt animation ngầm của CALayer
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        metalLayer.frame = view.bounds
+        metalLayer.contentsScale = view.window?.screen.nativeScale ?? UIScreen.main.nativeScale
+        CATransaction.commit()
+        
+        // mpv trên iOS không tự biết view đã đổi kích thước (swapchain giữ size cũ),
+        // nên khi kích thước thay đổi (xoay màn hình) ta khởi tạo lại video output.
+        let size = view.bounds.size
+        if lastLayoutSize != .zero, size != lastLayoutSize, size.width > 1, size.height > 1 {
+            scheduleVideoReset()
+        }
+        lastLayoutSize = size
+    }
+    
+    private var lastLayoutSize: CGSize = .zero
+    private var resetWorkItem: DispatchWorkItem?
+    
+    private func scheduleVideoReset() {
+        resetWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.mpv != nil else { return }
+            // tắt rồi bật lại track video -> VO tạo lại swapchain theo kích thước layer mới
+            self.checkError(mpv_set_property_string(self.mpv, "vid", "no"))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                guard let self, self.mpv != nil else { return }
+                self.checkError(mpv_set_property_string(self.mpv, "vid", "auto"))
+            }
+        }
+        resetWorkItem = work
+        // đợi animation xoay xong và gộp nhiều lần layout liên tiếp
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
+    }
+    
+    var isPaused: Bool {
+        getFlag(MPVProperty.pause)
     }
     
     func setupMpv() {
@@ -240,6 +275,9 @@ final class MPVMetalViewController: UIViewController {
                     mpv_terminate_destroy(mpv);
                     mpv = nil;
                     break;
+                case MPV_EVENT_FILE_LOADED:
+                    // Video vừa mở xong: áp lại audio / sub người dùng đã chọn lần trước
+                    self.applySavedTrackPreferences()
                 case MPV_EVENT_LOG_MESSAGE:
                     let msg = UnsafeMutablePointer<mpv_event_log_message>(OpaquePointer(event!.pointee.data))
                     print("[\(String(cString: (msg!.pointee.prefix)!))] \(String(cString: (msg!.pointee.level)!)): \(String(cString: (msg!.pointee.text)!))", terminator: "")
@@ -253,7 +291,7 @@ final class MPVMetalViewController: UIViewController {
     }
     
     
-    private func checkError(_ status: CInt) {
+    fileprivate func checkError(_ status: CInt) {
         if status < 0 {
             print("MPV API error: \(String(cString: mpv_error_string(status)))\n")
         }
