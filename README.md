@@ -1,118 +1,50 @@
-# MPVKit
+# MPV for iOS
 
 [![mpv](https://img.shields.io/badge/mpv-v0.41.0-blue.svg)](https://github.com/mpv-player/mpv)
 [![ffmpeg](https://img.shields.io/badge/ffmpeg-n9.0.2-blue.svg)](https://github.com/FFmpeg/FFmpeg)
 [![license](https://img.shields.io/github/license/mpvkit/MPVKit)](https://github.com/mpvkit/MPVKit/main/LICENSE)
 
-> MPVKit is only suitable for learning `libmpv` and will not be maintained too frequently.
+> A video player for iPhone (could be used on iPad)
 >
-> For production use, consider try using [AetherEngine](https://github.com/superuser404notfound/AetherEngine)
+> This repo is for personal use and will not be maintained frequently
 
-`MPVKit` is a collection of tools to use `mpv` in `iOS`, `macOS`, `tvOS` applications.
 
-It includes scripts to build `mpv` native libraries.
+Forked from [MPVKit](https://github.com/mpvkit/MPVKit)
 
-Forked from [kingslay/FFmpegKit](https://github.com/kingslay/FFmpegKit)
-
-## About Metal support
-
-Metal support only a patch version ([#7857](https://github.com/mpv-player/mpv/pull/7857)) and does not officially support it yet. Encountering any issues is not strange. 
+## Requirements
+iOS 16.4 or later, a computer, USB cable, Apple ID.
 
 ## Installation
 
-### Swift Package Manager
+### Install SideStore
+1. On your phone, turn on **Developer Mode**: Settings → Privacy & Security → Developer Mode (if it is not shown, connect the device to your computer first), then restart.
+2. Download [iloader](https://iloader.site/) on your computer and open it.
+3. Connect your device with the cable, unlock it, and tap **Trust**.
+4. In iloader, sign in with your Apple ID and install **SideStore** (choose the **stable** version).
+5. On your phone: Settings → General → VPN & Device Management → tap your Apple ID → **Trust**.
+6. In iloader, open **Manage Pairing File** and click **Place Pairing File** next to SideStore.
 
-```
-https://github.com/mpvkit/MPVKit.git
-```
+### Install LocalDevVPN
 
-### Choose which version
+1. Install **LocalDevVPN** from the App Store.
+2. Open it, turn it on, and allow the VPN configuration.
+3. Keep it on whenever you install or refresh apps with SideStore.
 
-| Version | License | Note |
-|---|---|---|
-| MPVKit | LGPL | [FFmpeg details](https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md) , [mpv details](https://github.com/mpv-player/mpv/blob/master/Copyright) |
-| MPVKit-GPL | GPL | Support samba protocol, same as old MPVKit version |
+### Install mpv
 
+1. Download `mpv.ipa` from the [Releases](https://github.com/th3end-vn/MPV_iOS/releases) page onto your phone (save it to the Files app).
+2. Connect to Wi-Fi then turn on LocalDevVPN, tap **Connect**.
+3. Open **SideStore** → **My Apps** → tap **+** → select `mpv.ipa`.
+4. Wait for the install to finish, then open the app.
 
-## How to build
+### Refresh every 7 days
 
-```bash
-make build
-# specified platforms (ios,macos,tvos,tvsimulator,isimulator,maccatalyst,xros,xrsimulator)
-make build platform=ios,macos
-# build GPL version
-make build enable-gpl
-# clean all build temp files and cache
-make clean
-# see help
-make help
-```
+Apps signed with a free Apple ID expire after **7 days**.
 
-## Make demo app using the local build version
+1. Turn on LocalDevVPN and connect to Wi-Fi.
+2. Open **SideStore** → **My Apps** → tap **Refresh All** (or tap the days counter next to the app).
 
-If you want the demo app to use the local build version, you need to modify `Package.swift` to reference the local build xcframework file.
-
-<details>
-<summary>Click here for more information.</summary>
-  
-```
-.binaryTarget(
-    name: "Libmpv-GPL",
-    path: "dist/release/Libmpv.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libavcodec-GPL",
-    path: "dist/release/Libavcodec.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libavdevice-GPL",
-    path: "dist/release/Libavdevice.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libavformat-GPL",
-    path: "dist/release/Libavformat.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libavfilter-GPL",
-    path: "dist/release/Libavfilter.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libavutil-GPL",
-    path: "dist/release/Libavutil.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libswresample-GPL",
-    path: "dist/release/Libswresample.xcframework.zip"
-),
-.binaryTarget(
-    name: "Libswscale-GPL",
-    path: "dist/release/Libswscale.xcframework.zip"
-),
-```
-
-</details>
-
-## Run default mpv player
-
-```bash
-./mpv.sh --input-commands='script-message display-stats-toggle' [url]
-./mpv.sh --list-options
-```
-
-> Use <kbd>Shift</kbd>+<kbd>i</kbd> to show stats overlay
-
-## Related Projects
-
-* [moltenvk-build](https://github.com/mpvkit/moltenvk-build)
-* [libplacebo-build](https://github.com/mpvkit/libplacebo-build)
-* [libdovi-build](https://github.com/mpvkit/libdovi-build)
-* [libshaderc-build](https://github.com/mpvkit/libshaderc-build)
-* [libluajit-build](https://github.com/mpvkit/libluajit-build)
-* [libass-build](https://github.com/mpvkit/libass-build)
-* [libbluray-build](https://github.com/mpvkit/libbluray-build)
-* [libsmbclient-build](https://github.com/mpvkit/libsmbclient-build)
-* [gnutls-build](https://github.com/mpvkit/gnutls-build)
-* [openssl-build](https://github.com/mpvkit/openssl-build)
+SideStore can also refresh in the background (Settings → Background Refresh), but this is not guaranteed. If an app has already expired, refresh it the same way.
 
 
 ## License
